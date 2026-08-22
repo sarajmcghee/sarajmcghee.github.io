@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "assets": "node scripts/build-assets.mjs"
+    "assets": "node scripts/build-assets.mjs",
+    "og": "node scripts/build-og-cards.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",
