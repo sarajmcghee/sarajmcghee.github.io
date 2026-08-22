@@ -30,6 +30,15 @@ export const CASE_STUDIES = [
     repo: "https://github.com/sarajmcghee/LegacyAutomation",
   },
   {
+    slug: "onboarding-assistant",
+    href: "/work/onboarding-assistant/",
+    stack: "Azure AI Foundry · Blob · AI Search · Power Platform",
+    title: "Onboarding is a retrieval problem",
+    summary:
+      "A knowledge assistant for new billing specialists, built over a corpus that started life as Word documents and Excel workbooks. Won the company hackathon; the write-up is honest about what a demo does and doesn't prove.",
+    repo: null,
+  },
+  {
     slug: "birdsong-leakage-audit",
     href: "/work/birdsong-leakage-audit/",
     stack: "Python · scikit-learn · evaluation",

@@ -17,6 +17,7 @@ export default defineConfig({
       input: {
         home: resolve(import.meta.dirname, "index.html"),
         legacyBroker: resolve(import.meta.dirname, "work/legacy-automation-broker/index.html"),
+        onboarding: resolve(import.meta.dirname, "work/onboarding-assistant/index.html"),
         leakageAudit: resolve(import.meta.dirname, "work/birdsong-leakage-audit/index.html"),
       },
       output: {
