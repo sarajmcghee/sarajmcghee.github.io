@@ -1,9 +1,10 @@
+import { useEffect, useRef } from "react";
 import { SkipLink, SiteHeader, SiteFooter, SectionHead } from "./components/SiteChrome.jsx";
 import { CASE_STUDIES, ART, PERSON } from "./site.js";
 
 const CHIPS = [
   "2× company hackathon winner",
-  "Team MVP, three years running",
+  "Team MVP three years running",
   "MS Computer Science (AI/ML), in progress",
   "Azure AI Foundry · .NET · PyTorch",
 ];
@@ -75,6 +76,23 @@ const CREDENTIALS = [
 ];
 
 export default function App() {
+  const heroSlot = useRef(null);
+
+  useEffect(() => {
+    let scene;
+    let cancelled = false;
+    import("./hero/index.js").then(({ mountHero }) =>
+      mountHero(heroSlot.current).then((s) => {
+        if (cancelled) s?.dispose();
+        else scene = s;
+      })
+    );
+    return () => {
+      cancelled = true;
+      scene?.dispose();
+    };
+  }, []);
+
   return (
     <>
       <SkipLink />
@@ -84,9 +102,10 @@ export default function App() {
         {/* ---------- Hero ---------- */}
         <section id="top" className="relative py-24 sm:py-32">
           <div
+            ref={heroSlot}
             id="hero-canvas-slot"
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 -z-10"
+            className="pointer-events-none absolute -inset-x-6 -bottom-10 -top-16 -z-10 overflow-hidden"
           />
 
           <p className="label">

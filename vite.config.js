@@ -23,6 +23,7 @@ export default defineConfig({
       output: {
         // Keep three.js out of the entry chunk so the hero text never waits on it.
         manualChunks: (id) => (id.includes("node_modules/three") ? "three" : undefined),
+        // three is loaded on demand by the hero module; it must never join an entry chunk.
       },
     },
   },

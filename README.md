@@ -48,13 +48,27 @@ Because the repo is named `sarajmcghee.github.io`, it serves from the domain roo
 **Phase B (foundation) — complete.** Build is green, tokens work across all three theme states,
 assets are compressed, deploy workflow is in place.
 
-**Phase C (content) — next.** Sections currently carry their real headings and anchors but no
-body content. The two case studies are drafted in `src/content/case-studies/` and need to be
-rendered into pages.
+**Phase C (content) — complete.** Three case studies as their own pages, all home sections
+written.
 
-**Phase D (the maple)** — the hero canvas mounts into `#hero-canvas-slot` in `src/App.jsx`.
-Hero text must paint without it. See the fallback ladder in the plan: WebGPU → WebGL2 with a
-reduced leaf count → static poster on unsupported browsers or `prefers-reduced-motion`.
+**Phase D (the maple) — complete.** `src/hero/` mounts a canvas into `#hero-canvas-slot`.
+three.js `WebGPURenderer` with one TSL shader compiled to WGSL or GLSL depending on backend.
+
+Test the ladder without changing machines:
+
+| URL | Path |
+|---|---|
+| `/` | WebGPU where available, 2,200 leaves |
+| `/?hero=webgl` | forced WebGL2 backend, 900 leaves |
+| `/?hero=off` | no canvas, and three.js is never fetched |
+
+Also skipped for `prefers-reduced-motion`, Save-Data, under 4GB device memory, and viewports
+under 1024px. The width gate mounts and unmounts across the breakpoint rather than deciding
+once, so maximising a narrow window brings the canvas in and dragging it narrow gives the text
+column back. The canvas follows theme changes live — the leaf palette is a uniform, not a baked
+constant.
+
+Measured 120fps with a 9.8ms worst frame on both backends.
 
 ## Not on this site
 
