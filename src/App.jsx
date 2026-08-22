@@ -62,7 +62,8 @@ const APPROACH = [
 const CREDENTIALS = [
   { term: "Now", value: "Software Engineer II, Unum — Chattanooga, TN, since 2022" },
   { term: "Studying", value: "MS Computer Science (AI/ML focus), Colorado State University Global" },
-  { term: "Before", value: "University of Nevada, Las Vegas · full-stack bootcamp, 2022" },
+  { term: "Studied", value: "BS Computer Science, minor in Mathematics — University of Nevada, Las Vegas" },
+  { term: "Also", value: "Full-stack bootcamp, 2022, returning to engineering" },
   { term: "Certified", value: "Azure Fundamentals (AZ-900) · GitHub Foundations" },
   { term: "Outside", value: "Park Steward, City of Chattanooga, since 2021" },
 ];
@@ -101,12 +102,6 @@ export default function App() {
               className="rounded-md bg-maple px-5 py-2.5 font-medium text-paper no-underline transition-opacity duration-200 hover:opacity-90"
             >
               See the work
-            </a>
-            <a
-              href="/resume.pdf"
-              className="rounded-md border border-rule px-5 py-2.5 no-underline transition-colors duration-200 hover:border-maple hover:text-maple"
-            >
-              Résumé
             </a>
           </div>
 
@@ -242,7 +237,13 @@ export default function App() {
                 results before someone else has to.
               </p>
               <p>
-                Outside of that I&rsquo;m a park steward and I draw. Both of those are older than
+                I studied computer science and mathematics, spent a stretch of years at home with
+                my kids, and came back to the field in 2022. The years away sharpened rather than
+                dulled the thing I&rsquo;m good at, which is being patient with systems that resist
+                being understood.
+              </p>
+              <p>
+                Outside of work I&rsquo;m a park steward and I draw. Both of those are older than
                 the machine learning, and they&rsquo;re why the datasets on this site have feathers.
               </p>
             </div>
