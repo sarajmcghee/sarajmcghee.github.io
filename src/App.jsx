@@ -128,6 +128,12 @@ export default function App() {
             >
               See the work
             </a>
+            <a
+              href="/resume.pdf"
+              className="rounded-md border border-rule px-5 py-2.5 no-underline transition-colors duration-200 hover:border-maple hover:text-maple"
+            >
+              Résumé
+            </a>
           </div>
 
           <ul className="mt-12 flex flex-wrap gap-x-6 gap-y-2">
