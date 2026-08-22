@@ -65,7 +65,7 @@ const CREDENTIALS = [
   {
     term: "Recognized",
     value:
-      "Two-time winner of Unum's company hackathon · voted MVP by my team three years running",
+      "Won Unum's company hackathon in 2024 and 2025 · voted MVP by my team three years running",
   },
   { term: "Studying", value: "MS Computer Science (AI/ML focus), Colorado State University Global" },
   { term: "Studied", value: "BS Computer Science, minor in Mathematics — University of Nevada, Las Vegas" },
@@ -243,7 +243,7 @@ export default function App() {
                 results before someone else has to.
               </p>
               <p>
-                I&rsquo;ve won my company&rsquo;s hackathon twice, both times building on retrieval,
+                I won my company&rsquo;s hackathon in 2024 and 2025, both times building on retrieval,
                 and my teammates have voted me MVP three years running. I can&rsquo;t show you that
                 work — it belongs to my employer — so everything on this site is my own.
               </p>

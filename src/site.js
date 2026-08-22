@@ -27,7 +27,7 @@ export const CASE_STUDIES = [
     title: "Teaching an LLM to operate software that predates it",
     summary:
       "An agent driving a legacy ASP.NET WebForms application through Edge's IE mode — grounded in DOM state rather than screenshots, with every action verified before the next one is allowed.",
-    repo: null,
+    repo: "https://github.com/sarajmcghee/LegacyAutomation",
   },
   {
     slug: "birdsong-leakage-audit",

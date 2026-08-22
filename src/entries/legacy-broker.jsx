@@ -14,7 +14,7 @@ function Page() {
         { term: "Status", value: "Deterministic layer working; orchestrator in progress" },
         { term: "Role", value: "Everything, including the target application" },
       ]}
-      repo={null}
+      repo="https://github.com/sarajmcghee/LegacyAutomation"
     >
       <h2>Problem</h2>
       <p>
