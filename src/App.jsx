@@ -2,9 +2,10 @@ import { SkipLink, SiteHeader, SiteFooter, SectionHead } from "./components/Site
 import { CASE_STUDIES, ART, PERSON } from "./site.js";
 
 const CHIPS = [
+  "2× company hackathon winner",
+  "Team MVP, three years running",
   "MS Computer Science (AI/ML), in progress",
   "Azure AI Foundry · .NET · PyTorch",
-  "AZ-900 · GitHub Foundations",
 ];
 
 const LAB = [
@@ -61,6 +62,11 @@ const APPROACH = [
 
 const CREDENTIALS = [
   { term: "Now", value: "Software Engineer II, Unum — Chattanooga, TN, since 2022" },
+  {
+    term: "Recognized",
+    value:
+      "Two-time winner of Unum's company hackathon · voted MVP by my team three years running",
+  },
   { term: "Studying", value: "MS Computer Science (AI/ML focus), Colorado State University Global" },
   { term: "Studied", value: "BS Computer Science, minor in Mathematics — University of Nevada, Las Vegas" },
   { term: "Also", value: "Full-stack bootcamp, 2022, returning to engineering" },
@@ -235,6 +241,11 @@ export default function App() {
                 real software, and the evaluation work that tells you whether any of it is behaving.
                 I train models too, mostly on birds, and I&rsquo;ve learned to distrust my own good
                 results before someone else has to.
+              </p>
+              <p>
+                I&rsquo;ve won my company&rsquo;s hackathon twice, both times building on retrieval,
+                and my teammates have voted me MVP three years running. I can&rsquo;t show you that
+                work — it belongs to my employer — so everything on this site is my own.
               </p>
               <p>
                 I studied computer science and mathematics, spent a stretch of years at home with
