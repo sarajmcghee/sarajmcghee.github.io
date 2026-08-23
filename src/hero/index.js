@@ -87,8 +87,18 @@ function afterFirstPaint() {
   });
 }
 
+/* The head script has already decided this, but say it again from here so the
+   two can't drift, and so a runtime failure can fall back to the poster. */
+function showPoster() {
+  document.documentElement.setAttribute("data-hero", "poster");
+}
+
 export async function mountHero(slot) {
-  if (!slot || hardSkip()) return null;
+  if (!slot) return null;
+  if (hardSkip()) {
+    showPoster();
+    return null;
+  }
 
   const motion = window.matchMedia(REDUCED_MOTION);
   const colorScheme = window.matchMedia("(prefers-color-scheme: dark)");
@@ -154,6 +164,7 @@ export async function mountHero(slot) {
       canvas.remove();
       canvas = null;
       building = false;
+      showPoster(); // no canvas after all — reveal the still
       if (import.meta.env?.DEV) console.warn("hero canvas unavailable:", err);
       return;
     }
@@ -202,7 +213,14 @@ export async function mountHero(slot) {
     teardown();
     build();
   };
-  const onMotion = () => (motion.matches ? teardown() : build());
+  const onMotion = () => {
+    if (motion.matches) {
+      showPoster();
+      teardown();
+    } else {
+      build();
+    }
+  };
 
   preloadScene();
 

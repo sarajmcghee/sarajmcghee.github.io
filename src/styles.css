@@ -356,3 +356,12 @@ h3 {
 #hero-canvas-slot[data-live="true"]::before {
   opacity: 0;
 }
+
+/* Visitors who are getting the canvas never see the poster at all — and never
+   download it either. The head script decides this before first paint; if the
+   canvas later fails to build, hero/index.js flips data-hero to "poster" and
+   this rule stops applying. */
+:root:not([data-hero="poster"]) #hero-canvas-slot::before {
+  background-image: none;
+  opacity: 0;
+}

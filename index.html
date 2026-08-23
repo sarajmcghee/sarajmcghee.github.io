@@ -32,6 +32,33 @@
       href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
     />
 
+    <script>
+      /* Decide before first paint whether this visitor will get the live canvas.
+         If they will, the poster never renders and there is no still-to-moving
+         swap to notice. If they won't — reduced motion, Save-Data, low memory,
+         2G — the poster is all they ever see. src/hero/index.js flips this to
+         "poster" if the canvas later fails to build. Kept in the document head,
+         and deliberately duplicated from hardSkip() there, because the decision
+         has to be made before any CSS is applied. */
+      (function () {
+        var poster = false;
+        try {
+          var c = navigator.connection || {};
+          var t = c.effectiveType;
+          poster =
+            matchMedia("(prefers-reduced-motion: reduce)").matches ||
+            !!c.saveData ||
+            (navigator.deviceMemory > 0 && navigator.deviceMemory < 4) ||
+            t === "2g" ||
+            t === "slow-2g" ||
+            new URLSearchParams(location.search).get("hero") === "off";
+        } catch (e) {
+          poster = true;
+        }
+        document.documentElement.setAttribute("data-hero", poster ? "poster" : "canvas");
+      })();
+    </script>
+
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
