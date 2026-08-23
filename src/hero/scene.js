@@ -47,7 +47,7 @@ function currentTheme() {
  * writes, no array of particle objects. Horizontal sway is two sines at
  * unrelated frequencies, which reads as air rather than as a wave.
  */
-const leafPosition = Fn(([seed, spread, height, fallSpeed, swayAmount]) => {
+const leafPosition = Fn(([seed, spread, height, fallSpeed, swayAmount, clusterX]) => {
   const t = time.mul(fallSpeed).add(seed.mul(97.0));
 
   // Wrap fall height so the column of leaves is endless.
@@ -57,13 +57,16 @@ const leafPosition = Fn(([seed, spread, height, fallSpeed, swayAmount]) => {
   const swayZ = cos(t.mul(0.53).add(seed.mul(7.0))).mul(swayAmount);
 
   // Spread the column across the frame, deterministic per seed.
-  const baseX = sin(seed.mul(123.4)).mul(spread).add(3.0);
+  const baseX = sin(seed.mul(123.4)).mul(spread).add(clusterX);
   const baseZ = cos(seed.mul(76.1)).mul(spread.mul(0.7));
 
   return vec3(baseX.add(swayX), y, baseZ.add(swayZ));
 });
 
-export async function createScene(canvas, { onReady, forceWebGL = false } = {}) {
+/* poster: render a still for the mobile and reduced-motion fallback. Skips the
+   fade-in and recomposes for a portrait frame, where the narrower horizontal FOV
+   otherwise pushes the tree off the right edge. */
+export async function createScene(canvas, { onReady, forceWebGL = false, poster = false } = {}) {
   const backendIsWebGPU = Boolean(navigator.gpu) && !forceWebGL;
   const theme = THEME[currentTheme()];
 
@@ -81,7 +84,7 @@ export async function createScene(canvas, { onReady, forceWebGL = false } = {}) 
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 120);
-  camera.position.set(0, 1.4, 8.5);
+  camera.position.set(0, 1.4, poster ? 10.5 : 8.5);
   camera.lookAt(0, 1.1, 0);
 
   scene.add(new THREE.HemisphereLight(theme.key, theme.fill, 2.1));
@@ -91,7 +94,9 @@ export async function createScene(canvas, { onReady, forceWebGL = false } = {}) 
 
   /* ---------- leaves ---------- */
 
-  const count = LEAF_COUNT[backend];
+  /* A still needs far fewer leaves than a moving scene: motion lets the eye read
+     a dense field as air, but frozen it just reads as noise. */
+  const count = poster ? 520 : LEAF_COUNT[backend];
   const leafGeo = new THREE.PlaneGeometry(0.042, 0.06);
 
   const seeds = new Float32Array(count);
@@ -104,6 +109,7 @@ export async function createScene(canvas, { onReady, forceWebGL = false } = {}) 
   const height = uniform(float(10.0));
   const fallSpeed = uniform(float(0.5));
   const sway = uniform(float(0.5));
+  const clusterX = uniform(float(poster ? 1.15 : 3.0));
   const opacity = uniform(float(0));
 
   const leafMat = new THREE.MeshBasicNodeMaterial({
@@ -112,7 +118,7 @@ export async function createScene(canvas, { onReady, forceWebGL = false } = {}) 
     side: THREE.DoubleSide,
   });
 
-  const offset = leafPosition(seed, spread, height, fallSpeed, sway);
+  const offset = leafPosition(seed, spread, height, fallSpeed, sway, clusterX);
   // Billboard the quad, then push it to its drifting position.
   const spin = time.mul(0.6).add(seed.mul(19.0));
   const spun = vec3(
@@ -153,7 +159,7 @@ export async function createScene(canvas, { onReady, forceWebGL = false } = {}) 
     tree.scale.setScalar(scale);
     box.setFromObject(tree);
     tree.position.y = -box.min.y - 3.1;
-    tree.position.x = 3.1;
+    tree.position.x = poster ? 1.2 : 3.1;
 
     /* The export is two untextured meshes: "trunk" at 30k triangles, and
        "foliage" at 954 — a few dozen flat cards that only ever worked because
@@ -177,7 +183,7 @@ export async function createScene(canvas, { onReady, forceWebGL = false } = {}) 
       const mat = new THREE.MeshBasicNodeMaterial({
         color: new THREE.Color(theme.bark),
         transparent: true,
-        opacity: 0.62,
+        opacity: poster ? 0.82 : 0.62,
         depthWrite: false,
       });
       barkMaterials.push(mat);
@@ -195,7 +201,7 @@ export async function createScene(canvas, { onReady, forceWebGL = false } = {}) 
 
   let raf = 0;
   let running = false;
-  let fadeIn = 0;
+  let fadeIn = poster ? 1 : 0;
   const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
 
   function resize() {
@@ -210,8 +216,9 @@ export async function createScene(canvas, { onReady, forceWebGL = false } = {}) 
   function frame() {
     raf = requestAnimationFrame(frame);
 
-    fadeIn = Math.min(fadeIn + 0.012, 1);
-    opacity.value = fadeIn * 0.66;
+    if (!poster) fadeIn = Math.min(fadeIn + 0.012, 1);
+    // A still carries less than a moving scene, so the poster sits heavier.
+    opacity.value = fadeIn * (poster ? 0.88 : 0.66);
 
     pointer.x += (pointer.tx - pointer.x) * 0.04;
     pointer.y += (pointer.ty - pointer.y) * 0.04;

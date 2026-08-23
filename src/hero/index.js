@@ -70,6 +70,10 @@ export async function mountHero(slot) {
   let themeObserver = null;
   let building = false;
   let destroyed = false;
+  /* Whether *this* instance is the one currently showing. StrictMode mounts the
+     effect twice in dev, and the width gate tears down and rebuilds, so a
+     disposed instance must not clear a flag a live one set. */
+  let live = false;
 
   const wideEnough = () => window.innerWidth >= MIN_WIDTH && !motion.matches;
 
@@ -82,6 +86,10 @@ export async function mountHero(slot) {
   const syncTheme = () => scene?.applyTheme(readTheme());
 
   function teardown() {
+    if (live) {
+      slot.removeAttribute("data-live"); // poster comes back
+      live = false;
+    }
     io?.disconnect();
     io = null;
     themeObserver?.disconnect();
@@ -128,7 +136,14 @@ export async function mountHero(slot) {
     }
 
     scene.start();
-    requestAnimationFrame(() => canvas && (canvas.style.opacity = "1"));
+
+    /* Read a layout property to flush the freshly-inserted canvas before setting
+       opacity, so the transition actually runs. Doing this in requestAnimationFrame
+       instead loses the callback whenever a rebuild swaps the canvas underneath it. */
+    void canvas.offsetHeight;
+    canvas.style.opacity = "1";
+    slot.setAttribute("data-live", "true"); // crossfades the poster out
+    live = true;
 
     io = new IntersectionObserver(
       ([entry]) => (entry.isIntersecting ? scene?.start() : scene?.stop()),

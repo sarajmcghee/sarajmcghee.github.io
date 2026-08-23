@@ -62,8 +62,11 @@ Test the ladder without changing machines:
 | `/?hero=webgl` | forced WebGL2 backend, 900 leaves |
 | `/?hero=off` | no canvas, and three.js is never fetched |
 
-Also skipped for `prefers-reduced-motion`, Save-Data, under 4GB device memory, and viewports
-under 1024px. The width gate mounts and unmounts across the breakpoint rather than deciding
+Below 1024px, on `prefers-reduced-motion`, on Save-Data, or under 4GB device memory the canvas
+never mounts — and those visitors get **the poster** instead: a still of the same scene rendered
+by `npm run poster` (needs `npm run dev` running). One file per theme, swapped by media query.
+Desktop shows it first and crossfades to the live canvas, which also covers the gap while
+three.js downloads. The width gate mounts and unmounts across the breakpoint rather than deciding
 once, so maximising a narrow window brings the canvas in and dragging it narrow gives the text
 column back. The canvas follows theme changes live — the leaf palette is a uniform, not a baked
 constant.

@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Poster render (dev only)</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: transparent; }
+      canvas { display: block; width: 100vw; height: 100vh; }
+    </style>
+  </head>
+  <body>
+    <canvas id="c"></canvas>
+    <script type="module">
+      // Dev-only page: mounts the hero scene full-bleed with no text and no mask,
+      // so `npm run poster` can capture a still for the mobile and reduced-motion
+      // fallback. Not listed in vite's rollup inputs, so it never ships.
+      // ?theme=dark renders the dark-theme palette; the site ships one poster per
+      // theme and swaps them with a media query.
+      const theme = new URLSearchParams(location.search).get("theme") === "dark" ? "dark" : "light";
+      document.documentElement.setAttribute("data-theme", theme);
+
+      const { createScene } = await import("/src/hero/scene.js");
+      const scene = await createScene(document.getElementById("c"), { poster: true });
+      scene.start();
+      // Let the fade-in finish before anything screenshots this.
+      setTimeout(() => (window.__posterReady = true), 3500);
+    </script>
+  </body>
+</html>
