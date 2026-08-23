@@ -7,27 +7,41 @@
  * three.js at all.
  *
  * The ladder:
- *   prefers-reduced-motion   → nothing. Not slowed, off.
- *   Save-Data or <4GB memory → nothing.
- *   viewport under 1024px    → nothing, but reversible; see below.
+ *   prefers-reduced-motion   → poster only. Not slowed, off.
+ *   Save-Data / <4GB / 2G    → poster only. 760 KB of scene is not worth it there.
  *   WebGPU                   → WGSL, full leaf count.
  *   WebGL2                   → the same TSL compiled to GLSL, a third of the leaves.
- *   anything else, or a throw → nothing, silently.
+ *   anything else, or a throw → poster only, silently.
  *
- * The width gate is deliberately *not* a one-shot check. Someone who opens the
- * page in a narrow window and then maximises it should get the canvas, and
- * someone who drags the window narrow should get their text column back — so the
- * gate mounts and unmounts across the breakpoint instead of deciding once at
- * startup and never revisiting it.
+ * Phones animate too, on a much smaller budget: the mobile framing renders under
+ * a third of the leaves and a smaller tree, tucked into the corner away from the
+ * copy. The earlier version blocked mobile outright, which cost the tree — the
+ * whole point of the hero — to save an animation nobody had measured.
+ *
+ * Framing is chosen by breakpoint and shared with the poster, so the crossfade
+ * is between two versions of the same picture. When they disagree it reads as a
+ * jump instead of a fade.
+ *
+ * The breakpoint is deliberately *not* a one-shot check: crossing it tears the
+ * scene down and rebuilds it in the other framing.
  */
 
 const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
-const MIN_WIDTH = 1024;
+const DESKTOP_WIDTH = 1024;
 
-const CANVAS_MASK = [
-  "linear-gradient(100deg, transparent 0%, transparent 46%, rgba(0,0,0,0.42) 66%, #000 88%)",
-  "linear-gradient(to bottom, transparent 0%, #000 18%, #000 78%, transparent 100%)",
-].join(",");
+const framingFor = (w) => (w >= DESKTOP_WIDTH ? "desktop" : "mobile");
+
+/* Masks match the poster's, per framing, for the same reason the framings do. */
+const CANVAS_MASK = {
+  desktop: [
+    "linear-gradient(100deg, transparent 0%, transparent 46%, rgba(0,0,0,0.42) 66%, #000 88%)",
+    "linear-gradient(to bottom, transparent 0%, #000 18%, #000 78%, transparent 100%)",
+  ].join(","),
+  mobile: [
+    "linear-gradient(to right, transparent 0%, transparent 34%, #000 66%)",
+    "linear-gradient(to bottom, transparent 0%, transparent 56%, #000 78%)",
+  ].join(","),
+};
 
 /* Debug override, so the ladder can be exercised on a machine that supports the
    top rung. ?hero=webgl forces the WebGL2 path, ?hero=off skips the canvas.
@@ -43,7 +57,22 @@ function hardSkip() {
   if (heroOverride() === "off") return true;
   if (navigator.connection?.saveData) return true;
   if (navigator.deviceMemory && navigator.deviceMemory < 4) return true;
+  // ~760 KB of scene has no business downloading over a 2G connection.
+  const conn = navigator.connection?.effectiveType;
+  if (conn === "slow-2g" || conn === "2g") return true;
   return false;
+}
+
+/* Start the network work as soon as the module runs, so the three.js chunk and
+   the tree download *during* the idle wait rather than after it. This is most of
+   the delay the poster was covering. */
+let scenePromise = null;
+function preloadScene() {
+  if (scenePromise) return scenePromise;
+  scenePromise = import("./scene.js");
+  // Warm the model too; createScene fetches it and it is the larger asset.
+  fetch("/assets/trees/red-maple.glb", { priority: "low" }).catch(() => {});
+  return scenePromise;
 }
 
 function afterFirstPaint() {
@@ -75,7 +104,8 @@ export async function mountHero(slot) {
      disposed instance must not clear a flag a live one set. */
   let live = false;
 
-  const wideEnough = () => window.innerWidth >= MIN_WIDTH && !motion.matches;
+  const allowed = () => !motion.matches;
+  let framing = framingFor(window.innerWidth);
 
   const readTheme = () => {
     const stamped = document.documentElement.getAttribute("data-theme");
@@ -101,7 +131,7 @@ export async function mountHero(slot) {
   }
 
   async function build() {
-    if (scene || building || destroyed || !wideEnough()) return;
+    if (scene || building || destroyed || !allowed()) return;
     building = true;
 
     canvas = document.createElement("canvas");
@@ -113,13 +143,13 @@ export async function mountHero(slot) {
     canvas.style.cssText =
       "position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;" +
       "transition:opacity 900ms ease;" +
-      `-webkit-mask-image:${CANVAS_MASK};mask-image:${CANVAS_MASK};` +
+      `-webkit-mask-image:${CANVAS_MASK[framing]};mask-image:${CANVAS_MASK[framing]};` +
       "-webkit-mask-composite:source-in;mask-composite:intersect;";
     slot.appendChild(canvas);
 
     try {
-      const { createScene } = await import("./scene.js");
-      scene = await createScene(canvas, { forceWebGL: heroOverride() === "webgl" });
+      const { createScene } = await preloadScene();
+      scene = await createScene(canvas, { forceWebGL: heroOverride() === "webgl", framing });
     } catch (err) {
       canvas.remove();
       canvas = null;
@@ -129,7 +159,7 @@ export async function mountHero(slot) {
     }
 
     // Conditions can change while the chunk and the model are in flight.
-    if (destroyed || !wideEnough()) {
+    if (destroyed || !allowed()) {
       building = false;
       teardown();
       return;
@@ -163,8 +193,18 @@ export async function mountHero(slot) {
   }
 
   const onVisibility = () => (document.hidden ? scene?.stop() : scene?.start());
-  const onWidth = () => (wideEnough() ? build() : teardown());
+  /* Crossing the breakpoint rebuilds in the other framing rather than just
+     hiding the canvas. */
+  const onWidth = () => {
+    const next = framingFor(window.innerWidth);
+    if (next === framing && scene) return;
+    framing = next;
+    teardown();
+    build();
+  };
   const onMotion = () => (motion.matches ? teardown() : build());
+
+  preloadScene();
 
   document.addEventListener("visibilitychange", onVisibility);
   window.addEventListener("resize", onWidth, { passive: true });

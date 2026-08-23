@@ -295,57 +295,64 @@ h3 {
 /* ============================================================
    Hero poster — the still that stands in for the live canvas
    ============================================================
-   The canvas only mounts on wide viewports with a working GPU path, which left
-   phones and reduced-motion visitors with no tree at all. This is a render of
-   the same scene, so those visitors get the identity without the cost. On
-   desktop it shows first and crossfades out as the live canvas fades in, which
-   also covers the gap while three.js is still downloading. */
+   Shown before the canvas arrives, and permanently for anyone the ladder in
+   src/hero/index.js rules out: reduced motion, Save-Data, low memory, 2G.
+
+   There is one poster per framing per theme, rendered by `npm run poster` from
+   the real scene at that breakpoint's aspect. `cover` then lands it close to
+   where the live canvas draws, so the handover is a fade rather than the jump
+   it was when one portrait poster stood in for both layouts. */
 
 #hero-canvas-slot::before {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: url("/assets/trees/maple-poster-light.webp");
+  background-image: url("/assets/trees/maple-poster-mobile-light.webp");
   background-repeat: no-repeat;
-  background-position: 88% 100%;
-  background-size: auto 92%;
-  opacity: 0.92;
-  transition: opacity 900ms ease;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 30%, #000 100%);
-  mask-image: linear-gradient(to bottom, transparent 0%, #000 30%, #000 100%);
+  background-position: center bottom;
+  background-size: cover;
+  opacity: 0.85;
+  transition: opacity 700ms ease;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, transparent 34%, #000 66%),
+    linear-gradient(to bottom, transparent 0%, transparent 56%, #000 78%);
+  mask-image: linear-gradient(to right, transparent 0%, transparent 34%, #000 66%),
+    linear-gradient(to bottom, transparent 0%, transparent 56%, #000 78%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+:root[data-theme="dark"] #hero-canvas-slot::before {
+  background-image: url("/assets/trees/maple-poster-mobile-dark.webp");
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) #hero-canvas-slot::before {
-    background-image: url("/assets/trees/maple-poster-dark.webp");
+    background-image: url("/assets/trees/maple-poster-mobile-dark.webp");
   }
 }
 
-:root[data-theme="dark"] #hero-canvas-slot::before {
-  background-image: url("/assets/trees/maple-poster-dark.webp");
+@media (min-width: 1024px) {
+  #hero-canvas-slot::before {
+    background-image: url("/assets/trees/maple-poster-desktop-light.webp");
+    opacity: 0.92;
+    -webkit-mask-image: linear-gradient(100deg, transparent 0%, transparent 46%, rgba(0, 0, 0, 0.42) 66%, #000 88%),
+      linear-gradient(to bottom, transparent 0%, #000 18%, #000 78%, transparent 100%);
+    mask-image: linear-gradient(100deg, transparent 0%, transparent 46%, rgba(0, 0, 0, 0.42) 66%, #000 88%),
+      linear-gradient(to bottom, transparent 0%, #000 18%, #000 78%, transparent 100%);
+  }
+
+  :root[data-theme="dark"] #hero-canvas-slot::before {
+    background-image: url("/assets/trees/maple-poster-desktop-dark.webp");
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) #hero-canvas-slot::before {
+      background-image: url("/assets/trees/maple-poster-desktop-dark.webp");
+    }
+  }
 }
 
 /* The live canvas has taken over. */
 #hero-canvas-slot[data-live="true"]::before {
   opacity: 0;
-}
-
-/* Phones: the hero text fills the column, so the tree shrinks to a motif in the
-   bottom corner and the mask keeps it out of the copy entirely. A tree you can
-   see beats a tree you can read through. */
-@media (max-width: 1023px) {
-  #hero-canvas-slot::before {
-    background-position: 108% 100%;
-    background-size: auto 46%;
-    opacity: 0.62;
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, transparent 58%, #000 78%);
-    mask-image: linear-gradient(to bottom, transparent 0%, transparent 58%, #000 78%);
-  }
-}
-
-@media (max-width: 480px) {
-  #hero-canvas-slot::before {
-    background-position: 116% 100%;
-    background-size: auto 38%;
-  }
 }

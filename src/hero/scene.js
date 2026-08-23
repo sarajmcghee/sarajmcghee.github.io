@@ -27,6 +27,15 @@ const MODEL_URL = "/assets/trees/red-maple.glb";
    over a headline is a worse outcome than no canvas at all. */
 const LEAF_COUNT = { webgpu: 2200, webgl: 900 };
 
+/* One framing per breakpoint, shared by the live canvas and the poster. When
+   the two disagree the crossfade reads as a jump rather than a fade, which is
+   exactly what it did before this existed. Phones get a smaller tree pushed to
+   the corner and a much lower leaf budget. */
+const FRAMING = {
+  desktop: { treeX: 3.1, clusterX: 3.0, camZ: 8.5, treeScale: 6.2, leafScale: 1 },
+  mobile: { treeX: 1.45, clusterX: 1.5, camZ: 11.0, treeScale: 5.4, leafScale: 0.28 },
+};
+
 const THEME = {
   light: { leaf: 0xa8322b, leafAlt: 0xc4693f, bark: 0x7c6a54, key: 0xfff6e8, fill: 0xbcd0c4 },
   dark: { leaf: 0xe2685a, leafAlt: 0xc4693f, bark: 0xb39b7c, key: 0xffe9cc, fill: 0x2b4a44 },
@@ -66,7 +75,11 @@ const leafPosition = Fn(([seed, spread, height, fallSpeed, swayAmount, clusterX]
 /* poster: render a still for the mobile and reduced-motion fallback. Skips the
    fade-in and recomposes for a portrait frame, where the narrower horizontal FOV
    otherwise pushes the tree off the right edge. */
-export async function createScene(canvas, { onReady, forceWebGL = false, poster = false } = {}) {
+export async function createScene(
+  canvas,
+  { onReady, forceWebGL = false, poster = false, framing = "desktop" } = {}
+) {
+  const frame_ = FRAMING[framing] ?? FRAMING.desktop;
   const backendIsWebGPU = Boolean(navigator.gpu) && !forceWebGL;
   const theme = THEME[currentTheme()];
 
@@ -84,7 +97,7 @@ export async function createScene(canvas, { onReady, forceWebGL = false, poster 
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 120);
-  camera.position.set(0, 1.4, poster ? 10.5 : 8.5);
+  camera.position.set(0, 1.4, frame_.camZ);
   camera.lookAt(0, 1.1, 0);
 
   scene.add(new THREE.HemisphereLight(theme.key, theme.fill, 2.1));
@@ -96,7 +109,7 @@ export async function createScene(canvas, { onReady, forceWebGL = false, poster 
 
   /* A still needs far fewer leaves than a moving scene: motion lets the eye read
      a dense field as air, but frozen it just reads as noise. */
-  const count = poster ? 520 : LEAF_COUNT[backend];
+  const count = Math.round((poster ? 620 : LEAF_COUNT[backend]) * frame_.leafScale) || 200;
   const leafGeo = new THREE.PlaneGeometry(0.042, 0.06);
 
   const seeds = new Float32Array(count);
@@ -109,7 +122,7 @@ export async function createScene(canvas, { onReady, forceWebGL = false, poster 
   const height = uniform(float(10.0));
   const fallSpeed = uniform(float(0.5));
   const sway = uniform(float(0.5));
-  const clusterX = uniform(float(poster ? 1.15 : 3.0));
+  const clusterX = uniform(float(frame_.clusterX));
   const opacity = uniform(float(0));
 
   const leafMat = new THREE.MeshBasicNodeMaterial({
@@ -155,11 +168,11 @@ export async function createScene(canvas, { onReady, forceWebGL = false, poster 
     const box = new THREE.Box3().setFromObject(tree);
     const size = new THREE.Vector3();
     box.getSize(size);
-    const scale = 6.2 / (size.y || 1);
+    const scale = frame_.treeScale / (size.y || 1);
     tree.scale.setScalar(scale);
     box.setFromObject(tree);
     tree.position.y = -box.min.y - 3.1;
-    tree.position.x = poster ? 1.2 : 3.1;
+    tree.position.x = frame_.treeX;
 
     /* The export is two untextured meshes: "trunk" at 30k triangles, and
        "foliage" at 954 — a few dozen flat cards that only ever worked because
@@ -201,7 +214,10 @@ export async function createScene(canvas, { onReady, forceWebGL = false, poster 
 
   let raf = 0;
   let running = false;
-  let fadeIn = poster ? 1 : 0;
+  /* No internal ramp: the canvas element's own CSS opacity transition is the
+     crossfade. Fading the leaves in as well meant a second ~1.4s ramp stacked on
+     top of it, which read as the scene arriving late. */
+  const fadeIn = 1;
   const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
 
   function resize() {
@@ -216,7 +232,6 @@ export async function createScene(canvas, { onReady, forceWebGL = false, poster 
   function frame() {
     raf = requestAnimationFrame(frame);
 
-    if (!poster) fadeIn = Math.min(fadeIn + 0.012, 1);
     // A still carries less than a moving scene, so the poster sits heavier.
     opacity.value = fadeIn * (poster ? 0.88 : 0.66);
 

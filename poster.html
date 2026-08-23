@@ -16,11 +16,13 @@
       // fallback. Not listed in vite's rollup inputs, so it never ships.
       // ?theme=dark renders the dark-theme palette; the site ships one poster per
       // theme and swaps them with a media query.
-      const theme = new URLSearchParams(location.search).get("theme") === "dark" ? "dark" : "light";
+      const params = new URLSearchParams(location.search);
+      const theme = params.get("theme") === "dark" ? "dark" : "light";
+      const framing = params.get("framing") === "mobile" ? "mobile" : "desktop";
       document.documentElement.setAttribute("data-theme", theme);
 
       const { createScene } = await import("/src/hero/scene.js");
-      const scene = await createScene(document.getElementById("c"), { poster: true });
+      const scene = await createScene(document.getElementById("c"), { poster: true, framing });
       scene.start();
       // Let the fade-in finish before anything screenshots this.
       setTimeout(() => (window.__posterReady = true), 3500);
