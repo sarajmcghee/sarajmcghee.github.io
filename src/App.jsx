@@ -150,8 +150,8 @@ export default function App() {
           <SectionHead
             index="01"
             eyebrow="Selected work"
-            title="Three case studies"
-            dek="Written up in full, including what each one doesn't prove. Two are mine with code you can read; the third is work I can describe but not hand you."
+            title="Four case studies"
+            dek="Written up in full, including what each one doesn't prove. Three are mine with code you can read; the fourth is work I can describe but not hand you."
           />
 
           <div className="mt-10 flex flex-col gap-5">

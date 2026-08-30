@@ -39,6 +39,12 @@ const CARDS = [
     foot: "Azure AI Foundry · Blob · AI Search",
   },
   {
+    file: "podcastlens.jpg",
+    eyebrow: "Case study · AWS · serverless",
+    title: "The bill is a <em>failure mode</em>",
+    foot: "Lambda · Transcribe · CloudFormation",
+  },
+  {
     file: "leakage-audit.jpg",
     eyebrow: "Case study · Python · evaluation",
     title: "My baseline scored 97.8%. <em>I didn't believe it.</em>",

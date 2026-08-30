@@ -39,6 +39,15 @@ export const CASE_STUDIES = [
     repo: null,
   },
   {
+    slug: "podcastlens",
+    href: "/work/podcastlens/",
+    stack: "AWS Lambda \u00b7 Transcribe \u00b7 Comprehend \u00b7 CloudFormation",
+    title: "The bill is a failure mode",
+    summary:
+      "A serverless podcast transcription pipeline designed around the one line item that can quietly cost $1,728 \u2014 a failure that doesn't look like one while it's happening.",
+    repo: "https://github.com/sarajmcghee/podcastlens",
+  },
+  {
     slug: "birdsong-leakage-audit",
     href: "/work/birdsong-leakage-audit/",
     stack: "Python · scikit-learn · evaluation",
